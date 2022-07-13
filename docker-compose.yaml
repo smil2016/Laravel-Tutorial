@@ -1,0 +1,77 @@
+version: "3.8"
+services:
+  phpmyadmin:
+    container_name: PHPMyAdmin
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8000:80
+    networks:
+      - dev_network
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+
+  app:
+    container_name: Application
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    expose:
+      - 9000
+    volumes:
+      - .:/usr/src/app
+      - ./public:/usr/src/app/public
+    depends_on:
+      - db
+    networks:
+      - dev_network
+
+  nginx:
+    container_name: Nginx
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    volumes:
+      - ./public:/usr/src/app/public
+      - ./storage/nginx-logs:/var/log/nginx
+    ports:
+      - 80:80
+    depends_on:
+      - app
+    environment:
+      NGINX_FPM_HOST: app
+      NGINX_ROOT: /usr/src/app/public
+    networks:
+      - dev_network
+
+  db:
+    container_name: Database
+    image: mysql:8.0.20
+    restart: always
+    volumes:
+      - ./storage/db-dumps:/usr/src
+      - ./storage/db-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: learning
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: stacy
+      MYSQL_PASSWORD: password
+    networks:
+      - dev_network
+
+  #redis:
+    #container_name: Redis
+    #image: redis:latest
+    #ports:
+      #- 6379:6379
+    #networks:
+      #- dev_network
+
+networks:
+  dev_network:
+    driver: bridge
