@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PostController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,5 +23,7 @@ Route::get('/dashboard', function () {
     $user = Auth::user();
     return view('dashboard')->with('user', $user);
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/post/{post}', [PostController::class, 'read']);    
 
 require __DIR__.'/auth.php';
