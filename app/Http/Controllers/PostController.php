@@ -8,18 +8,23 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
+    public function insertView()
+    {
+        return view('post-input');
+    }
+
     public function create(Request $request)
     {
-        Post::create([
+        $post = Post::create([
             'user_id' => Auth::user()->id,
             'title' => $request->title,
             'body' => $request->body
         ]);
 
-        return back()->with('success', 'You have created a new post');
+        return redirect()->route('post', $post);
     } 
 
-    public function read(Request $request, Post $post)
+    public function read(Post $post)
     {
         return view('post')->with('post', $post);
     }
